@@ -21,8 +21,7 @@ async def on_message(message):
     #if msg read is BOT
     if message.author == client.user:
         return
-    if (message.content.startswith('$embed')):
-        embed()
+
     if message.content.startswith('$hello'):
         #Frank Ocean Artist ID
 
