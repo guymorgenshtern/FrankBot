@@ -39,29 +39,32 @@ async def on_message(message):
         singleRelease = single['items'][0]['release_date'].split("-")
         dateSingle = datetime.datetime(int(singleRelease[0]), int(singleRelease[1]), int(singleRelease[2]))
 
+
         if (dateAlbum > dateSingle):
-            await message.channel.send("Frank Ocean's Most Recent Release: " + album['items'][0]['name'] + " "
-                                   + album['items'][0]['release_date'])
+            mostRecentRelease = album['items'][0]
+
         else:
+            mostRecentRelease = single['items'][0]
 
-            await message.channel.send("Frank Ocean's Most Recent Release: " + single['items'][0]['name'] + " "
-                                       + single['items'][0]['release_date'])
 
-            await message.channel.send(single['items'][0]['external_urls']['spotify'])
+        embed = discord.Embed(title=mostRecentRelease['name'],
+                              url=mostRecentRelease['external_urls']['spotify'],
+                              description="",
+                              color=0x109319)
+        # Add author, thumbnail, fields, and footer to the embed
+        embed.set_author(name="FRANKBOT", url="http://guymorgenshtern.com",
+                         icon_url="https://www.pikpng.com/pngl/b/479-4792959_album-cover-art-frank-ocean-blonde-png-download.png")
 
-        '''
-        for album in album['items']:
+        embed.set_thumbnail(url=mostRecentRelease['images'][1]['url'])
 
-            releaseDate = album['release_date'].split("-")
-            print(releaseDate)
-            d1 = datetime.datetime(int(releaseDate[0]), int(releaseDate[1]), int(releaseDate[2]))
+        embed.add_field(name="Released: ", value=mostRecentRelease['release_date'],
+                        inline=False)
 
-            if (d1 > mostRecent):
-                mostRecent = d1
-                await message.channel.send("Frank Ocean's Most Recent Release: " + album['name'] + " " 
-                                           + album['release_date'])
-        '''
+        embed.set_footer(text="Frank Ocean's Most Recent Release")
 
+
+        await message.channel.send(embed=embed)
+        await message.channel.send(mostRecentRelease['external_urls']['spotify'])
 
 
 client.run(config.token)
