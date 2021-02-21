@@ -24,13 +24,12 @@ async def on_message(message):
 
     if message.content.startswith('$hello'):
         #Frank Ocean Artist ID
-
         frankID = 'spotify:artist:2h93pZq0e7k5yf4dywlkpM?si=5Hu58VFzQ4GfnSMzaupIuA'
         artist = sp.artist(frankID)
 
 
-        album = sp.artist_albums('2h93pZq0e7k5yf4dywlkpM', 'album')
-        single = sp.artist_albums('2h93pZq0e7k5yf4dywlkpM', 'single')
+        album = sp.artist_albums('2h93pZq0e7k5yf4dywlkpM', 'album', 'CA')
+        single = sp.artist_albums('2h93pZq0e7k5yf4dywlkpM', 'single', 'CA')
 
         albumRelease = album['items'][0]['release_date'].split("-")
         dateAlbum = datetime.datetime(int(albumRelease[0]), int(albumRelease[1]), int(albumRelease[2]))
@@ -64,6 +63,8 @@ async def on_message(message):
 
         await message.channel.send(embed=embed)
         await message.channel.send(mostRecentRelease['external_urls']['spotify'])
+
+        await message.channel.send("i love u sofia")
 
 
 client.run(config.token)
