@@ -1,13 +1,20 @@
 import discord
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+from spotipy import oauth2
 import config
 import datetime
+
 
 client = discord.Client()
 
 #connect to Spotify API
-sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(config.CLIENT_ID, config.CLIENT_SECRET))
+SCOPE = 'user-library-read'
+CACHE = '.spotipyoauthcache'
+SPOTIPY_REDIRECT_URI = 'http://localhost:8080'
+sp_oauth = oauth2.SpotifyClientCredentials(client_id=config.CLIENT_ID, client_secret=config.CLIENT_SECRET)
+sp = spotipy.Spotify(auth=config.AUTH_TOKEN_SPOTIFY, client_credentials_manager=SpotifyClientCredentials(config.CLIENT_ID, config.CLIENT_SECRET))
+
 
 @client.event
 async def on_ready():
@@ -27,6 +34,11 @@ async def on_message(message):
 
     elif message.content.startswith('$find'):
         await artistInfo(message)
+
+    elif message.content.startswith('$create'):
+        await addSongsToPlaylist(message)
+        #sp.user_playlist_create(user='22n4vajxhbwojesdemkr3otda', name='testPlaylist', public=False, collaborative=True)
+
 
 async def frankInfo(message):
     # Frank Ocean Artist ID
@@ -54,8 +66,8 @@ async def frankInfo(message):
 
 async def artistInfo(message):
     artistName = str(message.content)[6:]
-    artistList = sp.search(q=artistName, limit=10)
-    artistID = artistList['tracks']['items'][2]['album']['artists'][0]['id']
+    artistList = sp.search(q=artistName, limit=10,offset=0,type='artist')
+    artistID = artistList['artists']['items'][0]['id']
 
     await createEmbededMessage(message, await findMostRecent(artistID))
 
@@ -77,8 +89,12 @@ async def findMostRecent(artistID):
     else:
         mostRecentRelease = single['items'][0]
 
-    print(mostRecentRelease)
     return mostRecentRelease
+
+async def findSong(songName):
+    songList = sp.search(songName,limit=10,offset=0,type='track')
+
+    return [songList['tracks']['items'][0]['id']]
 
 async def createEmbededMessage(message, mostRecentRelease):
 
@@ -95,9 +111,15 @@ async def createEmbededMessage(message, mostRecentRelease):
     embed.add_field(name="Released: ", value=mostRecentRelease['release_date'],
                     inline=False)
 
-    embed.set_footer(text= mostRecentRelease['artists'][0]['name'] + " Most Recent Release")
-
+    embed.set_footer(text=mostRecentRelease['artists'][0]['name'] + " Most Recent Release")
+    
     await message.channel.send(embed=embed)
     await message.channel.send(mostRecentRelease['external_urls']['spotify'])
 
+
+async def addSongsToPlaylist(message):
+    songName = str(message.content)[8:]
+    songURI = await findSong(songName)
+    print(str(songURI))
+    sp.user_playlist_add_tracks(user=config.USER, playlist_id='654v2Lq0OVbffZ4pFl3Ftf',tracks= songURI)
 client.run(config.token)
